@@ -69,56 +69,64 @@ export function startScramble(el, words) {
   return () => { alive = false; clearTimeout(timer); };
 }
 
-/* ---------- cursor, tilt y magnetismo (delegados: sirven para cualquier vista) ---------- */
-export function setupPointer() {
+/* ---------- seguimiento del mouse de bajo consumo ----------
+ * - pointermove solo guarda coordenadas y el elemento bajo el puntero: cero lecturas de layout.
+ * - Un único requestAnimationFrame (programado solo cuando el mouse se movió) hace todo el trabajo:
+ *   primero LEE (un getBoundingClientRect cacheado) y después ESCRIBE, sin layout thrashing.
+ * - El glow se mueve con variables CSS (--mouse-x / --mouse-y) definidas en el propio elemento,
+ *   que solo afectan a su transform: se resuelve en el compositor, sin repintar la página.
+ */
+export function setupPointer(glow) {
   if (!finePointer) return;
-  const cursor = $('.cursor');
-  const dot = $('.cursor__dot');
-  const ring = $('.cursor__ring');
-  let x = -100, y = -100, rx = -100, ry = -100;
-  let magnet = null;
+  let x = -1000, y = -1000;
+  let scheduled = false;
+  let card = null, cardRect = null;
+  let magnet = null, magnetRect = null;
 
-  window.addEventListener('pointermove', (e) => {
-    x = e.clientX; y = e.clientY;
+  const reset = (el) => { if (el) { el.style.transform = ''; el.classList.remove('is-tilting'); } };
 
-    const card = e.target.closest('.tilt');
-    if (card) {
-      const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;
-      const py = (e.clientY - r.top) / r.height;
+  const frame = () => {
+    scheduled = false;
+    // 1) lecturas
+    if (card && !cardRect) cardRect = card.getBoundingClientRect();
+    if (magnet && !magnetRect) magnetRect = magnet.getBoundingClientRect();
+    // 2) escrituras
+    glow.style.setProperty('--mouse-x', `${x}px`);
+    glow.style.setProperty('--mouse-y', `${y}px`);
+    if (card && cardRect) {
+      const px = (x - cardRect.left) / cardRect.width;
+      const py = (y - cardRect.top) / cardRect.height;
       card.style.setProperty('--mx', `${px * 100}%`);
       card.style.setProperty('--my', `${py * 100}%`);
       if (!reduced) {
-        const max = card.classList.contains('flow') ? 4 : 6;
-        card.style.transform = `perspective(900px) rotateX(${(0.5 - py) * max}deg) rotateY(${(px - 0.5) * max}deg) translateY(-2px)`;
+        const max = card.classList.contains('flow') ? 3 : 4;
+        card.classList.add('is-tilting');
+        card.style.transform = `perspective(1000px) rotateX(${(0.5 - py) * max}deg) rotateY(${(px - 0.5) * max}deg)`;
       }
     }
-
-    const m = e.target.closest('[data-magnetic]:not(.tilt)');
-    if (magnet && magnet !== m) magnet.style.transform = '';
-    magnet = m;
-    if (m && !reduced) {
-      const r = m.getBoundingClientRect();
-      m.style.transform = `translate(${(e.clientX - (r.left + r.width / 2)) * 0.22}px, ${(e.clientY - (r.top + r.height / 2)) * 0.3}px)`;
+    if (magnet && magnetRect && !reduced) {
+      magnet.style.transform = `translate(${(x - (magnetRect.left + magnetRect.width / 2)) * 0.2}px, ${(y - (magnetRect.top + magnetRect.height / 2)) * 0.25}px)`;
     }
+  };
+  const schedule = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(frame); } };
+
+  window.addEventListener('pointermove', (e) => {
+    x = e.clientX; y = e.clientY;
+    const t = e.target instanceof Element ? e.target : null;
+    const c = t?.closest('.tilt') || null;
+    if (c !== card) { reset(card); card = c; cardRect = null; }
+    const m = t?.closest('[data-magnetic]:not(.tilt)') || null;
+    if (m !== magnet) { reset(magnet); magnet = m; magnetRect = null; }
+    schedule();
   }, { passive: true });
 
-  document.addEventListener('pointerout', (e) => {
-    const card = e.target.closest('.tilt');
-    if (card && !card.contains(e.relatedTarget)) card.style.transform = '';
-  });
-  document.addEventListener('pointerover', (e) => {
-    cursor.classList.toggle('is-hover', !!e.target.closest('a, button, .tag, [data-magnetic]'));
-  });
-
-  const loop = () => {
-    rx += (x - rx) * 0.18;
-    ry += (y - ry) * 0.18;
-    dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-    requestAnimationFrame(loop);
-  };
-  loop();
+  // al hacer scroll o cambiar el tamaño, los rects cacheados dejan de valer
+  const invalidate = () => { cardRect = null; magnetRect = null; };
+  window.addEventListener('scroll', invalidate, { passive: true });
+  window.addEventListener('resize', invalidate, { passive: true });
+  document.addEventListener('pointerleave', () => { reset(card); reset(magnet); card = magnet = null; glow.classList.remove('is-on'); });
+  document.addEventListener('pointerenter', () => glow.classList.add('is-on'));
+  glow.classList.add('is-on');
 }
 
 /* ---------- onda al hacer clic en botones interactivos ---------- */

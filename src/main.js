@@ -28,12 +28,9 @@ toggle.addEventListener('click', () => setOpen(!links.classList.contains('is-ope
 links.addEventListener('click', (e) => { if (e.target.closest('a')) setOpen(false); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
 
-const prog = $('#hud-progress');
 const onScroll = () => {
   const y = window.scrollY;
   nav.classList.toggle('is-scrolled', y > 20);
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-  prog.style.height = `${max > 0 ? (y / max) * 100 : 0}%`;
 };
 window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -61,7 +58,7 @@ const dlg = $('#flow-modal');
 $('#fm-close').addEventListener('click', () => dlg.close());
 dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
 
-setupPointer();
+setupPointer($('.glow'));
 setupRipple();
 
 /* ---------- intro ---------- */
