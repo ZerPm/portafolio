@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Christian Manco · Analista Funcional & Soporte N3</title>
+  <meta name="description" content="Portafolio de Christian Manco: análisis funcional, soporte N3, integración de sistemas y automatización de procesos con n8n e IA." />
+  <meta name="theme-color" content="#05060f" />
+  <meta property="og:title" content="Christian Manco · Analista Funcional & Soporte N3" />
+  <meta property="og:description" content="Análisis funcional, soporte N3, integración de APIs y automatización con n8n e IA." />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <a class="skip" href="#view">Saltar al contenido</a>
+
+  <div class="intro" aria-hidden="true">
+    <div class="intro__panel intro__panel--top"></div>
+    <div class="intro__panel intro__panel--bottom"></div>
+    <div class="intro__text"><span>CM</span><i class="intro__bar"></i></div>
+  </div>
+
+  <!-- capas de fondo: escena 3D + velo de legibilidad -->
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="scrim" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__dot"></span><span class="cursor__ring"></span></div>
+
+  <div class="hud" aria-hidden="true">
+    <span class="hud__corner hud__corner--tl"></span>
+    <span class="hud__corner hud__corner--tr"></span>
+    <span class="hud__corner hud__corner--bl"></span>
+    <span class="hud__corner hud__corner--br"></span>
+    <div class="hud__index"><span id="hud-num">01</span><span class="hud__sep"></span><span id="hud-label">Inicio</span></div>
+    <div class="hud__progress"><i id="hud-progress"></i></div>
+  </div>
+
+  <header class="nav">
+    <a class="nav__brand" href="#/inicio" aria-label="Christian Manco, ir a inicio">
+      <span class="nav__logo">CM</span>
+      <span class="nav__name">Christian Manco</span>
+    </a>
+    <nav class="nav__links" id="nav-links" aria-label="Principal">
+      <a href="#/inicio" data-route="inicio"><i data-lucide="globe"></i>Inicio</a>
+      <a href="#/perfil" data-route="perfil"><i data-lucide="user"></i>Mi perfil</a>
+      <a href="#/automatizaciones" data-route="automatizaciones"><i data-lucide="workflow"></i>Automatizaciones n8n</a>
+      <a href="#/certificaciones" data-route="certificaciones"><i data-lucide="award"></i>Certificaciones</a>
+      <a href="#/contacto" data-route="contacto" class="nav__cta"><i data-lucide="send"></i>Contacto</a>
+    </nav>
+    <button class="nav__toggle" id="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links">
+      <i data-lucide="menu"></i>
+    </button>
+  </header>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span>© <span id="year"></span> Christian Paul Manco Malasquez</span>
+      <span class="mono muted">Vite · Three.js · n8n</span>
+    </div>
+  </footer>
+
+  <dialog class="flow-modal" id="flow-modal" aria-labelledby="fm-title">
+    <div class="flow-modal__inner">
+      <button class="flow-modal__close" id="fm-close" aria-label="Cerrar"><i data-lucide="x"></i></button>
+      <div id="fm-body"></div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
